@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\STM32F10x_FWLib\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\SOURCE\MOTOR;..\SOURCE\TIMER</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -581,12 +581,17 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>README</GroupName>
+          <GroupName>SOURCE</GroupName>
           <Files>
             <File>
-              <FileName>README.TXT</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\README.TXT</FilePath>
+              <FileName>Motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SOURCE\MOTOR\Motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SOURCE\TIMER\Timer.c</FilePath>
             </File>
           </Files>
         </Group>

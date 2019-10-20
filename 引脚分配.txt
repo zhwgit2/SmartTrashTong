@@ -1,0 +1,25 @@
+                            STM32引脚分配与资源使用说明
+超声波传感器
+PA0--->Echo1       //标注垃圾类别……
+PA1--->Echo2       //
+PA2--->Echo3       //
+PA3--->Echo4       //
+
+PC0--->Trig1         //与Echo对应
+PC1--->Trig2         //
+PC2--->Trig3         //
+PC3--->Trig4         //
+                             //使用通用定时器5的4个输入捕获通道
+
+电机控制
+PF0--->Motor1_IN1
+PF1--->Motor1_IN2
+PF2--->Motor2_IN1
+PF3--->Motor2_IN2
+PF4--->Motor3_IN1
+PF5--->Motor3_IN2
+PF6--->Motor4_IN1
+PF7--->Motor4_IN2
+
+
+
