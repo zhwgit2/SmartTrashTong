@@ -93,7 +93,7 @@ void TIM5_IRQHandler(void)
 			TIM5CaptureValue[1]=TIM_GetCapture1(TIM5);
 			TIM_OC1PolarityConfig(TIM5,TIM_ICPolarity_Rising);
 			TIM5CaptureChannlStatus[1]=0;
-			DistanceValue[1]=TIM5CaptureValue[1]*340.0/2.0;
+			DistanceValue[1]=TIM5CaptureValue[1]*34.0/2000.0;
 			TIM5CaptureValue[1]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -110,10 +110,10 @@ void TIM5_IRQHandler(void)
 	{
 		if(TIM5CaptureChannlStatus[2]&0x40)     //Channl_1 capture low level success,and capture finshed!
 		{
-			TIM5CaptureValue[2]=TIM_GetCapture1(TIM5);
+			TIM5CaptureValue[2]=TIM_GetCapture2(TIM5);
 			TIM_OC2PolarityConfig(TIM5,TIM_ICPolarity_Rising);
 			TIM5CaptureChannlStatus[2]=0;
-			DistanceValue[2]=TIM5CaptureValue[2]*340.0/2.0;
+			DistanceValue[2]=TIM5CaptureValue[2]*34.0/2000.0;
 			TIM5CaptureValue[2]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -130,10 +130,10 @@ void TIM5_IRQHandler(void)
 	{
 		if(TIM5CaptureChannlStatus[3]&0x40)     //Channl_1 capture low level success,and capture finshed!
 		{
-			TIM5CaptureValue[3]=TIM_GetCapture1(TIM5);
+			TIM5CaptureValue[3]=TIM_GetCapture3(TIM5);
 			TIM_OC3PolarityConfig(TIM5,TIM_ICPolarity_Rising);
 			TIM5CaptureChannlStatus[3]=0;
-			DistanceValue[3]=TIM5CaptureValue[3]*340.0/2.0;
+			DistanceValue[3]=TIM5CaptureValue[3]*34.0/2000.0;
 			TIM5CaptureValue[3]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -148,12 +148,13 @@ void TIM5_IRQHandler(void)
 	
 	if (TIM_GetITStatus(TIM5, TIM_IT_CC4) != RESET) //Channl_1 capture high or low level
 	{
+		printf("Channl_4 trigger!!!\r\n");
 		if(TIM5CaptureChannlStatus[4]&0x40)     //Channl_1 capture low level success,and capture finshed!
 		{
-			TIM5CaptureValue[4]=TIM_GetCapture1(TIM5);
+			TIM5CaptureValue[4]=TIM_GetCapture4(TIM5);
 			TIM_OC4PolarityConfig(TIM5,TIM_ICPolarity_Rising);
 			TIM5CaptureChannlStatus[4]=0;
-			DistanceValue[4]=TIM5CaptureValue[4]*340.0/2.0;
+			DistanceValue[4]=TIM5CaptureValue[4]*34.0/2000.0;
 			TIM5CaptureValue[4]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -161,7 +162,7 @@ void TIM5_IRQHandler(void)
 			TIM_SetCounter(TIM5,0);
 			TIM5CaptureChannlStatus[4]=0;
 			TIM5CaptureChannlStatus[4]|=0x40;	
-			TIM5CaptureValue[3]=0;			
+			TIM5CaptureValue[4]=0;			
 			TIM_OC4PolarityConfig(TIM5,TIM_ICPolarity_Falling);
 		}
 	}

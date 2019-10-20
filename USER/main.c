@@ -14,7 +14,7 @@ int main(void)
 	
 	TIM5_Cap_Init(0xffff,72-1);  //捕获定时器初始化
 	Ultrasonic_Trigger_TIM3_Init(25000-1,720-1);//超声波触发定时器初始化
-	Ultrasonic_EchoPin_Init();  //超声波，出发引脚初始化
+	Ultrasonic_EchoPin_Init();  //超声波，触发引脚初始化
 	
 	Motor_CtrlPin_Init();  //电机控制端口初始化
 	while(1)
