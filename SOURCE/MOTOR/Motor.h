@@ -4,6 +4,9 @@
 #include "sys.h"
 #include "delay.h"
 
+#define  Motor_Port1  GPIOE
+#define  Motor_Port2  GPIOG
+
 #define  Motor_1  0x01
 #define  Motor_2  0x02
 #define  Motor_3  0x03

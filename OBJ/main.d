@@ -34,3 +34,4 @@
 ..\obj\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 ..\obj\main.o: ..\SOURCE\TIMER\Timer.h
 ..\obj\main.o: ..\SOURCE\MOTOR\Motor.h
+..\obj\main.o: ..\SOURCE\DISPLAY\Display.h

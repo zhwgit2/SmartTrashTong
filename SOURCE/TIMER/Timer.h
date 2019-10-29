@@ -10,7 +10,9 @@
 #define  Ultrasonic_3  0x04
 #define  Ultrasonic_4  0x08
 
-void TIM5_Cap_Init(u16 arr,u16 psc);
+
+
+void TIM4_Cap_Init(u16 arr,u16 psc);
 void Ultrasonic_EchoPin_Init(void);
 void Ultrasonic_Trigger_TIM3_Init(u16 arr,u16 psc);
 void Ultrasonic_Echo_Trigger(u8 Ultrasonic_Num);
