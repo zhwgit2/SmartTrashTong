@@ -1,26 +1,55 @@
                             STM32引脚分配与资源使用说明
+人体感应：
+PG6--->out        //检测人体感应输入端口
+
 超声波传感器
-PA0--->Echo1       //标注垃圾类别……
-PA1--->Echo2       //
-PA2--->Echo3       //
-PA3--->Echo4       //
+PB6--->Echo1       //标注垃圾类别……
+PB7--->Echo2       //
+PB8--->Echo3       //
+PB9--->Echo4       //
 	              //使用通用定时器5的4个输入捕获通道
 PC0--->Trig1         //与Echo对应
 PC1--->Trig2         //
 PC2--->Trig3         //
 PC3--->Trig4         //
-                             //使用定时器3，定时触发超声波测距，250ms触发一次
+                             //使用定时器4，定时触发超声波测距，250ms触发一次
 
+语音模块(I/O组合电平模式)：
+PD0--->IO0        
+PD1--->IO1
+PD2--->IO2
+PD3--->IO3
+PD4--->IO4
+PD5--->IO5
+PD6--->IO6
+PD7--->IO7         //对应于语音模块手册的I/O口
+
+//扫码枪模块(串口2连接)：
+PA2--->UART2_TX   //连接模块的RX
+PA3--->UART2_RX  //连接模块的TX
+
+//屏幕连接(串口3连接)：
+PB10--->UART3_TX  //连接屏幕的RX
+PB11--->UART3_RX //连接屏幕的TX
+
+//打印调试(串口1连接)：
+PA9--->UART1_TX 
+PA10--->UART_RX
+
+//步进电机驱动信号
+PD9--->ENA
+PD11--->DIR
+PD13--->PUL
 
 电机控制
-PF0--->Motor1_IN1
-PF1--->Motor1_IN2
-PF2--->Motor2_IN1
-PF3--->Motor2_IN2
-PF4--->Motor3_IN1
-PF5--->Motor3_IN2
-PF6--->Motor4_IN1
-PF7--->Motor4_IN2
+PG13--->Motor1_IN1
+PE0--->Motor1_IN2
+PG14-->Motor2_IN1
+PG12--->Motor2_IN2
+PE11--->Motor3_IN1
+PE13--->Motor3_IN2
+PE8--->Motor4_IN1
+PE9--->Motor4_IN2
 
 
 
