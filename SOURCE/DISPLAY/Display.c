@@ -1,13 +1,18 @@
 #include "Display.h"
+#include "Timer.h"
 
 u8 ScanInfoBuf[5]={0};
 u8 DisClassBuf[]= {0xEE,0xB1,0x10,0x00,0x00,0x00,0x01,0x31,0xC4,0xEA,0xBC,0xB6,0x31,0xB0,0xE0,0xFF,0xFC,0xFF,0xFF};  //一年级一班
 u8 DisTimeBuf[] = {0xEE,0xB1,0x10,0x00,0x00,0x00,0x01,0xD0,0xC7,0xC6,0xDA,0x31,0xFF,0xFC,0xFF,0xFF };  //星期一
-u8 DisKeHuiShou[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xBF ,0xC9 ,0xBB ,0xD8 ,0xCA ,0xD5 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF };
-u8 DisChuYu[]=    {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB3 ,0xF8 ,0xD3 ,0xE0 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF };
-u8 DisYouHai[]=   {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xD3 ,0xD0 ,0xBA ,0xA6 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF };
-u8 DisQiTa[]=     {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xC6 ,0xE4 ,0xCB ,0xFB ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF };
-
+u8 Capacity[]   = {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0x38 ,0x30 ,0x25 ,0xFF ,0xFC ,0xFF ,0xFF };//80%
+u8 NumRecord[] =  {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0x30 ,0xFF ,0xFC ,0xFF ,0xFF }; //1.2.3
+u8 DisKeHuiShou[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xBF ,0xC9 ,0xBB ,0xD8 ,0xCA ,0xD5 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF };//可回收
+u8 DisChuYu[]=    {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB3 ,0xF8 ,0xD3 ,0xE0 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //厨余
+u8 DisYouHai[]=   {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xD3 ,0xD0 ,0xBA ,0xA6 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //有害
+u8 DisQiTa[]=     {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xC6 ,0xE4 ,0xCB ,0xFB ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //其他
+u8 NowType[] ={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB5 ,0xB1 ,0xC7 ,0xB0 ,0xD1 ,0xA1 ,0xD6 ,0xD0 ,0xFF ,0xFC ,0xFF ,0xFF };//当前选中
+u8 OverFlow[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xD2 ,0xD1 ,0xC2 ,0xFA ,0xFF ,0xFC ,0xFF ,0xFF }; //已满
+u8 Waitting[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB5 ,0xC8 ,0xB4 ,0xFD ,0xD6 ,0xD0 ,0xFF ,0xFC ,0xFF ,0xFF };  //等待中
 
 void Scan_Uart2_Init(u32 bound)
 {
@@ -51,6 +56,7 @@ void Scan_Uart2_Init(u32 bound)
 
 u8 num = 0;
 u8 ScanFinishFlag = 0;
+u8 StatusCtrl=0;
 void USART2_IRQHandler(void)                	//串口1中断服务程序
 {
 	u8 Res;
@@ -67,6 +73,7 @@ void USART2_IRQHandler(void)                	//串口1中断服务程序
 		{
 			ScanFinishFlag = 1;
 			num = 0;
+			StatusCtrl = 2;
 		}
 	} 
 }
@@ -121,21 +128,96 @@ void USART3_IRQHandler(void)                	//串口1中断服务程序
 	} 
 }
 
-u8 Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei)
+void Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei, u8 count, u8 recordnum)
 {
-	DisClassBuf[7] = ji ;
+	DisClassBuf[6] = (count * 4)%20 + 1;  //设置控件ID
+	DisClassBuf[7] = ji ;                 //设置班级信息
 	DisClassBuf[12] = ban ;
-	DisTimeBuf[11] = time ;
-	Send_To_Display_Comd(DisClassBuf,sizeof(DisClassBuf));
-//	Send_To_Display_Comd(DisTimeBuf);
-//	switch(lei)
-//	{
-//		case 1:Send_To_Display_Comd(DisKeHuiShou);break;
-//		case 2:Send_To_Display_Comd(DisChuYu);break;
-//		case 3:Send_To_Display_Comd(DisYouHai);break;
-//		case 4:Send_To_Display_Comd(DisQiTa);break;
-//	}
-	return 1;
+	Send_To_Display_Comd(DisClassBuf,sizeof(DisClassBuf));  //显示班级信息
+	
+	DisTimeBuf[6] = (count * 4)%20 + 3;  //设置控件ID
+	DisTimeBuf[11] = time ;              //设置时间
+	Send_To_Display_Comd(DisTimeBuf,sizeof(DisTimeBuf));    //显示时间信息
+	
+	switch(lei)   //显示垃圾类型
+	{
+		case 1:DisKeHuiShou[6] = (count * 4)%20 + 2;Send_To_Display_Comd(DisKeHuiShou, sizeof(DisKeHuiShou));CapacityValue[1]=110;break;
+		case 2:DisChuYu[6] = (count * 4)%20 + 2;	  Send_To_Display_Comd(DisChuYu, sizeof(DisChuYu));        CapacityValue[2]=110;break;
+		case 3:DisYouHai[6] = (count * 4)%20 + 2;	  Send_To_Display_Comd(DisYouHai, sizeof(DisYouHai));      CapacityValue[3]=110;break;
+		case 4:DisQiTa[6] = (count * 4)%20 + 2;     Send_To_Display_Comd(DisQiTa, sizeof(DisQiTa));          CapacityValue[4]=110;break;
+	}
+
+	Display_Capacity_Info(CapacityValue);  //显示当前容量信息，打开的垃圾桶不现实容量，显示等待中
+	
+	NumRecord[6] = (count * 4)%20 + 4;    //修改控件ID
+	NumRecord[7] = recordnum + 0x30;      //设置倒垃圾次数
+	Send_To_Display_Comd(NumRecord, sizeof(NumRecord));  //显示倒垃圾次数
+	
+	NowType[6] = 21;   //修改控件ID
+	Send_To_Display_Comd(NowType, sizeof(NowType));  //显示当前选中
+	
+	switch(lei)   //显示当前选中垃圾类型
+	{
+		case 1:DisKeHuiShou[6] = 22;Send_To_Display_Comd(DisKeHuiShou, sizeof(DisKeHuiShou));break;
+		case 2:DisChuYu[6] = 22;	  Send_To_Display_Comd(DisChuYu, sizeof(DisChuYu));        break;
+		case 3:DisYouHai[6] = 22;	 	Send_To_Display_Comd(DisYouHai, sizeof(DisYouHai));      break;
+		case 4:DisQiTa[6] = 22;     Send_To_Display_Comd(DisQiTa, sizeof(DisQiTa));          break;
+	}
+}
+
+void Display_Capacity_Info(u8 *Capacity)   //显示容量信息
+{	
+	if (Capacity[1] >= 100)  
+	{
+		Waitting[6] = 23;    //修改文本框ID
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+	}
+	else
+	{
+		Capacity[6] = 23;   //修改文本框ID
+		Capacity[7] = Capacity[1]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity[1]%10 + 0x30;   //修改容量值低位
+		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
+	}
+	
+	if (Capacity[2] >= 100)  
+	{
+		Waitting[6] = 24;    //修改文本框ID
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+	}
+	else
+	{
+		Capacity[6] = 24;   //修改文本框ID
+		Capacity[7] = Capacity[2]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity[2]%10 + 0x30;   //修改容量值低位
+		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
+	}
+	
+	if (Capacity[3] >= 100)  
+	{
+		Waitting[6] = 25;    //修改文本框ID
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+	}
+	else
+	{
+		Capacity[6] = 25;   //修改文本框ID
+		Capacity[7] = Capacity[3]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity[3]%10 + 0x30;   //修改容量值低位
+		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
+	}
+	
+	if (Capacity[4] >= 100)  
+	{
+		Waitting[6] = 26;    //修改文本框ID
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+	}
+	else
+	{
+		Capacity[6] = 26;   //修改文本框ID
+		Capacity[7] = Capacity[4]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity[4]%10 + 0x30;   //修改容量值低位
+		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
+	}
 }
 
 u8 Send_To_Display_Comd(u8 *p, u8 length)
@@ -151,3 +233,5 @@ u8 Send_To_Display_Comd(u8 *p, u8 length)
 	printf("Num:%d\r\n",i);
 	return 1;
 }
+
+

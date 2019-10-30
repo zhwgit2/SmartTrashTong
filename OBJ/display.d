@@ -33,3 +33,4 @@
 ..\obj\display.o: ..\SYSTEM\delay\delay.h
 ..\obj\display.o: ..\SYSTEM\usart\usart.h
 ..\obj\display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+..\obj\display.o: ..\SOURCE\TIMER\Timer.h
