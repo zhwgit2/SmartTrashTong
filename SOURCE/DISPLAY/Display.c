@@ -10,9 +10,10 @@ u8 DisKeHuiShou[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xBF ,0xC9 ,0xBB ,0
 u8 DisChuYu[]=    {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB3 ,0xF8 ,0xD3 ,0xE0 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //厨余
 u8 DisYouHai[]=   {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xD3 ,0xD0 ,0xBA ,0xA6 ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //有害
 u8 DisQiTa[]=     {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xC6 ,0xE4 ,0xCB ,0xFB ,0xC0 ,0xAC ,0xBB ,0xF8 ,0xFF ,0xFC ,0xFF ,0xFF }; //其他
-u8 NowType[] ={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB5 ,0xB1 ,0xC7 ,0xB0 ,0xD1 ,0xA1 ,0xD6 ,0xD0 ,0xFF ,0xFC ,0xFF ,0xFF };//当前选中
+u8 NowType[] ={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB5 ,0xB1 ,0xC7 ,0xB0 ,0xD1 ,0xA1 ,0xD6 ,0xD0 ,0xA3 ,0xBA, 0xFF ,0xFC ,0xFF ,0xFF };//当前选中
 u8 OverFlow[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xD2 ,0xD1 ,0xC2 ,0xFA ,0xFF ,0xFC ,0xFF ,0xFF }; //已满
 u8 Waitting[]={0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xB5 ,0xC8 ,0xB4 ,0xFD ,0xD6 ,0xD0 ,0xFF ,0xFC ,0xFF ,0xFF };  //等待中
+u8 DeleteAll[] = {0xEE ,0xB1 ,0x10 ,0x00 ,0x00 ,0x00 ,0x01 ,0xFF ,0xFC ,0xFF ,0xFF };
 
 void Scan_Uart2_Init(u32 bound)
 {
@@ -73,7 +74,7 @@ void USART2_IRQHandler(void)                	//串口1中断服务程序
 		{
 			ScanFinishFlag = 1;
 			num = 0;
-			StatusCtrl = 2;
+			//StatusCtrl = 2;
 		}
 	} 
 }
@@ -139,7 +140,7 @@ void Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei, u8 count, u8 recordnum)
 	DisTimeBuf[11] = time ;              //设置时间
 	Send_To_Display_Comd(DisTimeBuf,sizeof(DisTimeBuf));    //显示时间信息
 	
-	switch(lei)   //显示垃圾类型
+	switch(lei-0x30)   //显示垃圾类型
 	{
 		case 1:DisKeHuiShou[6] = (count * 4)%20 + 2;Send_To_Display_Comd(DisKeHuiShou, sizeof(DisKeHuiShou));CapacityValue[1]=110;break;
 		case 2:DisChuYu[6] = (count * 4)%20 + 2;	  Send_To_Display_Comd(DisChuYu, sizeof(DisChuYu));        CapacityValue[2]=110;break;
@@ -156,7 +157,7 @@ void Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei, u8 count, u8 recordnum)
 	NowType[6] = 21;   //修改控件ID
 	Send_To_Display_Comd(NowType, sizeof(NowType));  //显示当前选中
 	
-	switch(lei)   //显示当前选中垃圾类型
+	switch(lei - 0x30)   //显示当前选中垃圾类型
 	{
 		case 1:DisKeHuiShou[6] = 22;Send_To_Display_Comd(DisKeHuiShou, sizeof(DisKeHuiShou));break;
 		case 2:DisChuYu[6] = 22;	  Send_To_Display_Comd(DisChuYu, sizeof(DisChuYu));        break;
@@ -165,72 +166,98 @@ void Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei, u8 count, u8 recordnum)
 	}
 }
 
-void Display_Capacity_Info(u8 *Capacity)   //显示容量信息
+void Display_Capacity_Info(u8 *Capacity_p)   //显示容量信息
 {	
-	if (Capacity[1] >= 100)  
+	if (Capacity_p[1] >= 100)  
 	{
 		Waitting[6] = 23;    //修改文本框ID
-		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“等待中”
 	}
-	else
+	else if(Capacity_p[1] < 5)
+	{
+		OverFlow[6] = 23;    //修改文本框ID
+		Send_To_Display_Comd(OverFlow, sizeof(OverFlow)); //显示“已满”
+	}else
 	{
 		Capacity[6] = 23;   //修改文本框ID
-		Capacity[7] = Capacity[1]/10 + 0x30;   //修改容量值高位
-		Capacity[8] = Capacity[1]%10 + 0x30;   //修改容量值低位
+		Capacity[7] = Capacity_p[1]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity_p[1]%10 + 0x30;   //修改容量值低位
 		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
 	}
 	
-	if (Capacity[2] >= 100)  
+	
+	
+	if (Capacity_p[2] >= 100)  
 	{
 		Waitting[6] = 24;    //修改文本框ID
 		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
-	}
-	else
+	}else if(Capacity_p[2] < 5)
+	{
+		OverFlow[6] = 24;    //修改文本框ID
+		Send_To_Display_Comd(OverFlow, sizeof(OverFlow)); //显示“已满”
+	}else
 	{
 		Capacity[6] = 24;   //修改文本框ID
-		Capacity[7] = Capacity[2]/10 + 0x30;   //修改容量值高位
-		Capacity[8] = Capacity[2]%10 + 0x30;   //修改容量值低位
+		Capacity[7] = Capacity_p[2]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity_p[2]%10 + 0x30;   //修改容量值低位
 		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
 	}
 	
-	if (Capacity[3] >= 100)  
+	
+	
+	if (Capacity_p[3] >= 100)  
+	{
+		OverFlow[6] = 25;    //修改文本框ID
+		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
+	}else if(Capacity_p[3] < 5)
 	{
 		Waitting[6] = 25;    //修改文本框ID
-		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
-	}
-	else
+		Send_To_Display_Comd(OverFlow, sizeof(OverFlow)); //显示“已满”
+	}else
 	{
 		Capacity[6] = 25;   //修改文本框ID
-		Capacity[7] = Capacity[3]/10 + 0x30;   //修改容量值高位
-		Capacity[8] = Capacity[3]%10 + 0x30;   //修改容量值低位
+		Capacity[7] = Capacity_p[3]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity_p[3]%10 + 0x30;   //修改容量值低位
 		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
 	}
 	
-	if (Capacity[4] >= 100)  
+	
+	
+	if (Capacity_p[4] >= 100)  
 	{
 		Waitting[6] = 26;    //修改文本框ID
 		Send_To_Display_Comd(Waitting, sizeof(Waitting)); //显示“已满”
-	}
-	else
+	}else if(Capacity_p[4] < 5)
+	{
+		OverFlow[6] = 26;    //修改文本框ID
+		Send_To_Display_Comd(OverFlow, sizeof(OverFlow)); //显示“已满”
+	}else
 	{
 		Capacity[6] = 26;   //修改文本框ID
-		Capacity[7] = Capacity[4]/10 + 0x30;   //修改容量值高位
-		Capacity[8] = Capacity[4]%10 + 0x30;   //修改容量值低位
+		Capacity[7] = Capacity_p[4]/10 + 0x30;   //修改容量值高位
+		Capacity[8] = Capacity_p[4]%10 + 0x30;   //修改容量值低位
 		Send_To_Display_Comd(Capacity, sizeof(Capacity));  //显示容量
 	}
+	
+	DeleteAll[6] = 21;
+	Send_To_Display_Comd(DeleteAll, sizeof(DeleteAll));
+	DeleteAll[6] = 22;
+	Send_To_Display_Comd(DeleteAll, sizeof(DeleteAll));
 }
 
 u8 Send_To_Display_Comd(u8 *p, u8 length)
 {
-	int i=0;
-	printf("Length:%d\r\n",length);
+	u8 i=0;
+	//printf("Length:%d\r\n",length);
 	while(i < length)
 	{
 		USART_SendData(USART3,p[i]);
 		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
+		USART_SendData(USART1,p[i]);
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
 		i++;
 	}
-	printf("Num:%d\r\n",i);
+	//printf("Num:%d\r\n",i);
 	return 1;
 }
 

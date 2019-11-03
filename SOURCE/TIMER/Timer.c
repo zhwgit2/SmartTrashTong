@@ -31,15 +31,24 @@ void People_Test_Init(void)
 	NVIC_Init(&NVIC_InitStructure); 
 }
 
-
+u8 Lock=0;
 void EXTI9_5_IRQHandler(void)
 {
-	delay_ms(10);//消抖
-	if(Exist_People == 1)	 	 //WK_UP按键
-	{				 
-		StatusCtrl=0;
-	}
-	EXTI_ClearITPendingBit(EXTI_Line6); //清除LINE0上的中断标志位  
+	
+	if(!Lock)   //加锁，防止中断多次触发
+	{
+		//delay_ms(10);//消抖
+		if(Exist_People == 1)	 	 //WK_UP按键
+		{				 
+			StatusCtrl=1;
+			Lock = 1;
+		}
+	}	
+	EXTI_ClearITPendingBit(EXTI_Line5);
+	EXTI_ClearITPendingBit(EXTI_Line6);
+	EXTI_ClearITPendingBit(EXTI_Line7);
+	EXTI_ClearITPendingBit(EXTI_Line8);
+	EXTI_ClearITPendingBit(EXTI_Line9); //清除LINE0上的中断标志位  
 }
 
 TIM_ICInitTypeDef  TIM4_ICInitStructure;
@@ -51,8 +60,8 @@ void TIM4_Cap_Init(u16 arr,u16 psc)
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);	//使能TIM5时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);  //使能GPIOA时钟
-
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB|RCC_APB2Periph_AFIO, ENABLE);  //使能GPIOA时钟
+	
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9;  //PA0 清除之前设置  
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD; //PA0 输入  
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
@@ -122,7 +131,7 @@ u8 OverflowNum=0;
 u8  TIM4CaptureChannlStatus[5]={0};	//输入捕获各通道状态	  	    				
 u16	TIM4CaptureValue[5];  	  //输入捕获值
 float DistanceValue[5]={0.0}; //测距值
-u8 CapacityValue[5];
+u8 CapacityValue[5]={0,4,78,32,102};
 void TIM4_IRQHandler(void)
 { 
 	if(TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)//产生了更新中断
@@ -137,7 +146,7 @@ void TIM4_IRQHandler(void)
 			TIM_OC1PolarityConfig(TIM4,TIM_ICPolarity_Rising);
 			TIM4CaptureChannlStatus[1]=0;
 			DistanceValue[1]=TIM4CaptureValue[1]*34.0/2000.0;
-			CapacityValue[1]=(u8)(DistanceValue[1]/CapacityFullValue);
+			CapacityValue[1]=(u8)(DistanceValue[1]*100/(CapacityFullValue+5));
 			TIM4CaptureValue[1]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -158,7 +167,7 @@ void TIM4_IRQHandler(void)
 			TIM_OC2PolarityConfig(TIM4,TIM_ICPolarity_Rising);
 			TIM4CaptureChannlStatus[2]=0;
 			DistanceValue[2]=TIM4CaptureValue[2]*34.0/2000.0;
-			CapacityValue[2]=(u8)(DistanceValue[2]/CapacityFullValue);
+			CapacityValue[2]=(u8)(DistanceValue[2]*100/(CapacityFullValue+1));
 			TIM4CaptureValue[2]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -179,7 +188,7 @@ void TIM4_IRQHandler(void)
 			TIM_OC3PolarityConfig(TIM4,TIM_ICPolarity_Rising);
 			TIM4CaptureChannlStatus[3]=0;
 			DistanceValue[3]=TIM4CaptureValue[3]*34.0/2000.0;
-			CapacityValue[3]=(u8)(DistanceValue[3]/CapacityFullValue);
+			CapacityValue[3]=(u8)(DistanceValue[3]*100/(CapacityFullValue-3));
 			TIM4CaptureValue[3]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -200,7 +209,7 @@ void TIM4_IRQHandler(void)
 			TIM_OC4PolarityConfig(TIM4,TIM_ICPolarity_Rising);
 			TIM4CaptureChannlStatus[4]=0;
 			DistanceValue[4]=TIM4CaptureValue[4]*34.0/2000.0;
-			CapacityValue[4]=(u8)(DistanceValue[4]/CapacityFullValue);
+			CapacityValue[4]=(u8)(DistanceValue[4]*100/(CapacityFullValue+3));
 			TIM4CaptureValue[4]=0;
 		}
 		else   //Channl_1 capture high level success
@@ -260,26 +269,26 @@ void Ultrasonic_Trigger_TIM3_Init(u16 arr,u16 psc)
 	TIM_Cmd(TIM3, ENABLE);  //使能TIMx		
 }
 
-void Ultrasonic_Echo_Trigger(u8 Ultrasonic_Num)
+void Ultrasonic_Echo_Trigger(uint16_t Ultrasonic_Num)
 {
 	GPIO_SetBits(GPIOC,Ultrasonic_Num);
-	delay_us(30);
+	delay_us(100);
 	GPIO_ResetBits(GPIOC,Ultrasonic_Num);
 }
 
+u8 Trignum=0;
 void TIM3_IRQHandler(void)   //TIM3中断
-{
-	static int num=0;
+{		
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)  //检查TIM3更新中断发生与否
 	{
-		switch(num%4)
+		switch(Trignum%4)
 		{
 			case 0:Ultrasonic_Echo_Trigger(Ultrasonic_1);break;
 			case 1:Ultrasonic_Echo_Trigger(Ultrasonic_2);break;
 			case 2:Ultrasonic_Echo_Trigger(Ultrasonic_3);break;
 			case 3:Ultrasonic_Echo_Trigger(Ultrasonic_4);break;
 		}
-		num++;
+		Trignum++;
 	}
 	TIM_ClearITPendingBit(TIM3, TIM_IT_Update  );  //清除TIMx更新中断标志 
 }

@@ -56,13 +56,13 @@ void  Motor_Ctrl_Task(u8 Motor_N,u8 dir)
 		case Motor_2:{
 										if(dir)
 										{
-											Motor2_IN1_H();
-											Motor2_IN2_L();
+											Motor2_IN1_L();
+											Motor2_IN2_H();									
 										}
 										else
 										{
-											Motor2_IN1_L();
-											Motor2_IN2_H();
+											Motor2_IN1_H();
+											Motor2_IN2_L();
 										}
 									};break;
 		case Motor_3:{
@@ -126,7 +126,7 @@ void  Voice_Play_Task(u8 MusicN)
 {
 	u8 PortValue = MusicN ^ 0xff;
 	GPIO_Write(GPIOD, PortValue); //¥•∑¢∂‘”¶”Ô“Ù
-	delay_ms(20);
+	delay_ms(50);
 	GPIO_Write(GPIOD, 0x00ff);   //ª÷∏¥ø’œ–Ã¨
 }
 

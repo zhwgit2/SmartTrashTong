@@ -16,8 +16,8 @@
 #define  Forward  0x01
 #define  Reverse  0x00
 
-#define  Open   0x01
-#define  Close  0x00
+#define  Open   0x00
+#define  Close  0x01
 
 #define  Motor1_IN1_H()  GPIO_SetBits(Motor_Port2,GPIO_Pin_13); 
 #define  Motor1_IN1_L()  GPIO_ResetBits(Motor_Port2,GPIO_Pin_13);
