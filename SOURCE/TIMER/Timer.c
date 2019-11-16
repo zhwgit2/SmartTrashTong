@@ -131,7 +131,7 @@ u8 OverflowNum=0;
 u8  TIM4CaptureChannlStatus[5]={0};	//输入捕获各通道状态	  	    				
 u16	TIM4CaptureValue[5];  	  //输入捕获值
 float DistanceValue[5]={0.0}; //测距值
-u8 CapacityValue[5]={0,4,78,32,102};
+u8 CapacityValue[5]={0,50,50,50,50};
 void TIM4_IRQHandler(void)
 { 
 	if(TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)//产生了更新中断

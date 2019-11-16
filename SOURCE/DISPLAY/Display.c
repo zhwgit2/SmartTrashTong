@@ -129,7 +129,7 @@ void USART3_IRQHandler(void)                	//串口1中断服务程序
 	} 
 }
 
-void Display_Scan_Info(u8 ji, u8 ban, u8 time, u8 lei, u8 count, u8 recordnum)
+void Display_Scan_Info(u8 ji, u8 ban, u8 lei, u8 time, u8 count, u8 recordnum)
 {
 	DisClassBuf[6] = (count * 4)%20 + 1;  //设置控件ID
 	DisClassBuf[7] = ji ;                 //设置班级信息
@@ -253,8 +253,8 @@ u8 Send_To_Display_Comd(u8 *p, u8 length)
 	{
 		USART_SendData(USART3,p[i]);
 		while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) == RESET);
-		USART_SendData(USART1,p[i]);
-		while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
+//		USART_SendData(USART1,p[i]);
+//		while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET);
 		i++;
 	}
 	//printf("Num:%d\r\n",i);
